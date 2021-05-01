@@ -1,7 +1,7 @@
 # Luma
 A PowerPC emitter/dynamic assembler single header library, written in C++
 
-[![Build And Test](https://github.com/wheremyfoodat/Luma/actions/workflows/run_tests.yml/badge.svg)](https://github.com/wheremyfoodat/Luma/actions/workflows/run_tests.yml)
+[![Build And Test](https://github.com/wheremyfoodat/Luma/actions/workflows/run_tests.yml/badge.svg)](https://github.com/wheremyfoodat/Luma/actions/workflows/run_tests.yml) [![Best Emitter Test](https://github.com/wheremyfoodat/Luma/actions/workflows/meme.yml/badge.svg)](https://github.com/wheremyfoodat/Luma/actions/workflows/meme.yml)
 # Features
 - Easy to use interface
 - Easy to include - just add the "luma.hpp" file to your projects include directory
