@@ -8,7 +8,7 @@ A PowerPC emitter/dynamic assembler single header library, written in C++
 - Support for most basic instructions
 - Support for most FPU instructions 
 - Support for the IBM Gekko/Broadway/Espresso's "Paired Single" SIMD ISA extension
-- Support for instructions of... questionable usefulness, including data/instruction cache control instructions, superscalar execution control instruction, etc
+- Support for instructions of... questionable usefulness, including data/instruction cache control instructions, superscalar execution control instructions, etc
 - Easily customizable, letting you add custom instructions/pseudo-ops/types and more
 - Support for many different helpful pseudo-ops and macros (`liw`, `clrrwi`, `rotlwi`, `rotrwi`, and more)
 - Support for common assembler directives (align, db, dh, dw, dd, df32, df64)
