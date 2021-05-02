@@ -247,13 +247,13 @@ public:
     	if (imm < 0x8000) // For immediates < 0x8000, we can use a single addi
     		li (reg, imm);
     	else {
-    		lis (reg, 0); // set register to 0. We use lis because it doesn't touch flags, therefore can't create a CR dependency, therefore fast-ish
-    		ori (reg, reg, imm);
+    		li (reg, 0); // set register to 0.
+    		ori (reg, reg, imm); // or register with immediate
     	}
     }
 
     void lis (GPR reg, uint16_t imm) {
-        write32 (0x3C000000 | (reg << 21) | imm);
+        addis (reg, r0, imm);
     }
 
     template <bool setFlags = false>

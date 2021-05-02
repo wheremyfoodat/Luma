@@ -1,6 +1,6 @@
 // This is a program made to check the emitter for regressions by the CI
 // Horrible code will ensue
-#define RUNNING_IN_CI 1
+#define RUNNING_IN_CI 0
 #include <iostream>
 #include <vector>
 #include <string>
@@ -317,6 +317,7 @@ int main() {
     gen.li (r8, 10);
     gen.liu (r9, 0xFFFE);
     gen.liu (r7, 10);
+    gen.lis (r9, 0xF000);
 
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI
