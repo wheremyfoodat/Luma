@@ -56,9 +56,9 @@ typedef void (*JITCallback)(); // A function pointer type for emitter-generated 
 
 int main() {
     const char* str = "Hello from PowerPC!";
-    PPCEmitter gen; // Creates an emitter object with a 64KB code buffer. 
-                    //You can also specify the amount of memory you want in the constructor (if any), or do allocation yourself
-    
+    PPCEmitter <FixedSize> gen; // Creates an emitter object with a 64KB code buffer. 
+                                //You can also specify the amount of memory you want in the constructor (if any), or do allocation yourself
+                                // Replace the "FixedSize" with "AutoGrow" to have your code buffer automatically grow when overflowing (note: slower and buggier)
     auto code = (JITCallback) gen.getCurr(); // Get pointer to emitted code
 
     // Emit the assembly for hello world
