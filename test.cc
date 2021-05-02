@@ -321,6 +321,11 @@ int main() {
     gen.lis (r9, 0xF000);
     gen.ps_sel <true> (f0, f1, f9, f3);
 
+    gen.liw (r10, 0x8000);
+    gen.liw (r12, 0x999);
+    gen.liw (r1, 0xFFFFF000);
+    gen.liw (r31, 0x12345678);
+
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI
         const auto correctFile = loadBinary (".github/test_binaries/binary1.bin");

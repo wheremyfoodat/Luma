@@ -497,7 +497,7 @@ public:
     }
 
     void liw (GPR reg, uint32_t imm) {
-        if (imm <= 0xFFFF) // If upper halfword is 0 -> use li
+        if (imm <= 0x7FFF || imm >= 0xFFFF8000) // use li if possible
             li (reg, imm);
 
         else if ((imm & 0xFFFF) == 0) // If lower halfword is 0 -> use lis
