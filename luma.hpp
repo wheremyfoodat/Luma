@@ -239,8 +239,17 @@ public:
     void bctr() { write32 (0x4E800420); } // Branch to counter register
     void bctrl() { write32 (0x4E800421); } // Branch to counter register and link
 
-    void li (GPR reg, uint16_t imm) {
-        write32 (0x38000000 | (reg << 21) | imm);
+    void li (GPR reg, int16_t imm) { // Load immediate (signed)
+        addi (reg, r0, imm);
+    }
+
+    void liu (GPR reg, uint16_t imm) { // Load immediate (unsigned)
+    	if (imm < 0x8000) // For immediates < 0x8000, we can use a single addi
+    		li (reg, imm);
+    	else {
+    		lis (reg, 0); // set register to 0. We use lis because it doesn't touch flags, therefore can't create a CR dependency, therefore fast-ish
+    		ori (reg, reg, imm);
+    	}
     }
 
     void lis (GPR reg, uint16_t imm) {
@@ -1221,7 +1230,7 @@ public:
     void dssall() { write32 (0x7E00066C); } // Data Stream Stop All
 
     void vaddfp (VR dest, VR src1, VR src2) { // Vector Add Floating-Point (32-bit)
-        write32 (0x1000000A | (dest << 21) | (src1 << 16) | (src2 << 11));
-    }
+		write32 (0x1000000A | (dest << 21) | (src1 << 16) | (src2 << 11));
+	}
 };
 } // End Namespace Luma

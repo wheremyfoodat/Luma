@@ -313,6 +313,10 @@ int main() {
     gen.andis (r25, r28, 123);
     gen.dss (2);
     gen.dssall();
+    gen.li (r9, -10);
+    gen.li (r8, 10);
+    gen.liu (r9, 0xFFFE);
+    gen.liu (r7, 10);
 
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI
