@@ -735,9 +735,9 @@ public:
             panic ("[Emitter] Fatal: Unaligned branch displacement");
         
         if (disp >= INT26_MIN && disp <= INT26_MAX) // Check if the displacement in words can be encoded in 24 bits in a relative branch
-            write32 (0x48000000 | (disp & 0x3FFFFFC));
+            write32 (0x48000000 | (disp & 0x3FFFFFC) | link);
         else if ((intptr_t) address >= INT26_MIN && (intptr_t) address <= INT26_MAX) // Check if the target address can be encoded in 24 bits in an absolute branch instead
-            write32 (0x48000000 | ((uintptr_t) address & 0x3FFFFFC) | 2);
+            write32 (0x48000000 | ((uintptr_t) address & 0x3FFFFFC) | 2 | link);
         else
             panic ("[Emitter] Fatal: Invalid label for 24-bit branch, displacement of %08X words exceeds possible range\n", disp >> 2);
     }
