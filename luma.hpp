@@ -1232,5 +1232,9 @@ public:
     void vaddfp (VR dest, VR src1, VR src2) { // Vector Add Floating-Point (32-bit)
 		write32 (0x1000000A | (dest << 21) | (src1 << 16) | (src2 << 11));
 	}
+
+    void vsubfp (VR dest, VR src1, VR src2) { // Vector Add Floating-Point (32-bit)
+        write32 (0x1000004A | (dest << 21) | (src1 << 16) | (src2 << 11));
+    }
 };
 } // End Namespace Luma

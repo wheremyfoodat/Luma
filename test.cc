@@ -330,6 +330,8 @@ int main() {
     gen.bl((void*) 124); // test absolute branches
     gen.setLabel (label9);
 
+    gen.vsubfp (v0, v9, v31);
+
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI
         const auto correctFile = loadBinary (".github/test_binaries/binary1.bin");
