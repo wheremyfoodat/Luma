@@ -2,6 +2,7 @@
 // Horrible code will ensue
 #define RUNNING_IN_CI 1
 #include <iostream>
+#include <iterator>
 #include <vector>
 #include <string>
 #include "luma.hpp"
@@ -24,9 +25,22 @@ public:
 };
 } // end Namespace Emitter
 
-std::vector <char> loadBinary (std::string directory){
-    std::ifstream file (directory);
-    return {std::istreambuf_iterator<char>(file), {}};
+static std::vector <uint8_t> loadBinary(std::string directory) {
+    std::ifstream file (directory, std::ios::binary);
+    std::vector <uint8_t> vec;
+
+    file.unsetf(std::ios::skipws); //Απαγορευει να αγνοει το whitespace
+    std::streampos fileSize;
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg();
+    file.seekg(0, std::ios::beg); //Βρισκει το μεγεθος του ROM
+
+    vec.insert(vec.begin(),
+                std::istream_iterator<uint8_t>(file),
+                std::istream_iterator<uint8_t>()); //Φορτωνει ολο το αρχειο
+
+    file.close();
+    return vec;
 }
 
 int main() {
@@ -43,12 +57,6 @@ int main() {
     gen.lwzu (r0, r1, -4);
     gen.lhz (r2, r1, -16);
     gen.setLabel (label2, a);
-
-    const auto label3 = gen.beq();
-    gen.setLabel (label3, 0);
-
-    const auto label4 = gen.beq();
-    gen.setLabel (label4, (uint32_t*) -4);
 
     gen.lhzu (r1, r1, -69);
     gen.lbzu (r0, r31, 0);
@@ -327,9 +335,7 @@ int main() {
     gen.liw (r31, 0x12345678);
 
     const auto label9 = gen.bl();
-    gen.bl((void*) 124); // test absolute branches
     gen.setLabel (label9);
-
     gen.vsubfp (v0, v9, v31);
 
     // Time to check the code for regressions
@@ -340,7 +346,7 @@ int main() {
             return -1;
         }
 
-        const auto blocks = (char*) gen.getBuffer();
+        const auto blocks = (uint8_t*) gen.getBuffer();
         for (auto i = 0; i < gen.getCodeSize(); i++) {
             if (blocks[i] != correctFile[i]) {
                 printf ("Test failure. Created binary does not match with correct binary. Failed at byte: %d\n", i);
