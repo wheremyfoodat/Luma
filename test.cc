@@ -29,15 +29,15 @@ static std::vector <uint8_t> loadBinary(std::string directory) {
     std::ifstream file (directory, std::ios::binary);
     std::vector <uint8_t> vec;
 
-    file.unsetf(std::ios::skipws); //Απαγορευει να αγνοει το whitespace
+    file.unsetf(std::ios::skipws);
     std::streampos fileSize;
     file.seekg(0, std::ios::end);
     fileSize = file.tellg();
-    file.seekg(0, std::ios::beg); //Βρισκει το μεγεθος του ROM
+    file.seekg(0, std::ios::beg);
 
     vec.insert(vec.begin(),
                 std::istream_iterator<uint8_t>(file),
-                std::istream_iterator<uint8_t>()); //Φορτωνει ολο το αρχειο
+                std::istream_iterator<uint8_t>());
 
     file.close();
     return vec;
