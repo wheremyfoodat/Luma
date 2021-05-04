@@ -531,7 +531,7 @@ public:
     
     template <bool setFlags = false>
     void rlwinm (GPR dest, GPR src, uint8_t shift, uint8_t mb, uint8_t me) { // Rotate left word then and 
-        write32 (0x54000001 | (src << 21) | (dest << 16) | ((shift & 31) << 11) | (mb << 6) | (me << 1) | setFlags);
+        write32 (0x54000000 | (src << 21) | (dest << 16) | ((shift & 31) << 11) | (mb << 6) | (me << 1) | setFlags);
     }
 
     template <bool setFlags = false>
@@ -545,7 +545,12 @@ public:
     }
 
     template <bool setFlags = false>
-    void clrrwi (GPR dest, GPR src, uint8_t len) { // Bit clear
+    void clrlwi (GPR dest, GPR src, uint8_t len) { // Bit clear left
+        rlwinm <setFlags> (dest, src, 0, len, 31); // Very intuitively, this is also a rlwinm alias
+    }
+
+    template <bool setFlags = false>
+    void clrrwi (GPR dest, GPR src, uint8_t len) { // Bit clear right
         rlwinm <setFlags> (dest, src, 0, 0, 31 - len); // Very intuitively, this is also a rlwinm alias
     }
 
@@ -1072,9 +1077,9 @@ public:
     void rfi()   { write32 (0x4C000064); } // Return from interrupt
     void sc()    { write32 (0x44000002); } // System call
 
-    void dump() {
+    void dump (std::string directory) {
         const uint32_t size = getCodeSize();
-        std::ofstream file ("output.bin", std::ios::binary);
+        std::ofstream file (directory, std::ios::binary);
         file.write ((const char*) code, size);
         printf ("Dumped %u bytes\n", size);
     }

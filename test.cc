@@ -337,6 +337,9 @@ int main() {
     const auto label9 = gen.bl();
     gen.setLabel (label9);
     gen.vsubfp (v0, v9, v31);
+    gen.clrlwi (r1, r2, 10);
+    gen.clrrwi (r9, r30, 5);
+    gen.clrlwi <true> (r27, r20, 19);
 
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI
@@ -359,7 +362,7 @@ int main() {
     }
 
     else // If we're not running in CI, dump the file
-        gen.dump();
+        gen.dump (".github/test_binaries/binary1.bin");
 
     return 0;
 }
