@@ -1077,9 +1077,9 @@ public:
     void rfi()   { write32 (0x4C000064); } // Return from interrupt
     void sc()    { write32 (0x44000002); } // System call
 
-    void dump (std::string directory) {
+    void dump (std::string path) {
         const uint32_t size = getCodeSize();
-        std::ofstream file (directory, std::ios::binary);
+        std::ofstream file (path, std::ios::binary);
         file.write ((const char*) code, size);
         printf ("Dumped %u bytes\n", size);
     }
