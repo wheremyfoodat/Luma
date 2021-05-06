@@ -340,6 +340,9 @@ int main() {
     gen.clrlwi (r1, r2, 10);
     gen.clrrwi (r9, r30, 5);
     gen.clrlwi <true> (r27, r20, 19);
+    gen.setz (r0, r20);
+    gen.mfcr (r9);
+    gen.mfcr (r3);
 
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI

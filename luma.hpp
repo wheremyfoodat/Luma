@@ -252,6 +252,11 @@ public:
     	}
     }
 
+    void setz (GPR dest, GPR src) { // Set dest to 1 if src is 0, otherwise set dest to 0
+        cntlzw (dest, src); // cntlzw returns 0-31 normally, but it returns 32 for 0. This means we can use bit 5 to check whether or not src is 0
+        srwi (dest, dest, 5); // Shift bit 5 to LSB
+    }
+
     void lis (GPR reg, uint16_t imm) {
         addis (reg, r0, imm);
     }
@@ -859,6 +864,10 @@ public:
     }
 
     void mtcr (GPR src) { mtcrf (0xFF, src); } // Move to condition register
+
+    void mfcr (GPR dest) {
+        write32 (0x7C000026 | (dest << 21));
+    }
 
     void mtsr (SR dest, GPR src) { // Move to segment register
         write32 (0x7C0001A4 | (src << 21) | (dest << 16));
