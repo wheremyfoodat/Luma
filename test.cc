@@ -344,15 +344,18 @@ int main() {
     gen.mfcr (r9);
     gen.mfcr (r3);
 
-    gen.repeat <10> ([&](auto i) {
+    gen.repeat <10> ([&](auto i) { // test repeat directive (should emit 10 NOPs and 10 addis with incrementing immediates)
         gen.nop();
         gen.addi (r0, r1, i);
     });
 
-    gen.loop <69, r3> ([&]() {
+    gen.loop <69, r3> ([&]() { // test loop directive (should emit a 69 iteration loop of nop and isync, using r3 as counter)
         gen.nop();
         gen.isync();
     });
+
+    gen.ds ("*boop* *boop* *boop*"); // test C-strings
+    gen.ds (std::string("*boop* *boop* *boop*")); // test std::strings
 
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI

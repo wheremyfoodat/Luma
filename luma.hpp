@@ -232,6 +232,18 @@ public:
     constexpr void df32 (float* arr, int size)    { write <float> (arr, size); } //  Data float array
     constexpr void df64 (double* arr, int size)   { write <double> (arr, size); } //  Data double array
 
+    constexpr void ds (const char* str) { // Data string (null-terminated)
+        while (*str != '\0') {// copy characters until null terminator
+            db (*str++);
+        }
+
+        db ('\0'); // copy null terminator
+    }
+
+    constexpr void ds (std::string str) {
+        ds (str.c_str());
+    }
+
     void align (int bytes) {
         if (bytes == 1) 
             return;
