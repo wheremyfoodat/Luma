@@ -11,19 +11,19 @@ using namespace Luma;
 
 // Example of making a derived class to add custom extensions
 namespace Luma { // Extend Emitter namespace to add new types
-enum FancyNewRegisterType { // Defining an enum for a hypothetical new
-    foo1, foo2, foo3, foo4, foo5, foo6, foo7
+enum FancyNewRegisterType { // Defining an enum for a hypothetical new register type
+    MyReg0, MyReg1, MyReg2, MyReg3
 };
 
-class ExtendedEmitter : public PPCEmitter <FixedSize> { // Making an emitter extension to support our fancy extension
+class ExtendedEmitter : public PPCEmitter <FixedSize> { // Making an emitter extension to support the extra stuff we want
 public:
     using PPCEmitter::PPCEmitter; // Use PPCEmitter constructors
     
-    void fancyNewInstruction (FancyNewRegisterType dest, FancyNewRegisterType src) { // Adding support for a new instruction using our new register type
+    void MyInstruction (FancyNewRegisterType dest, FancyNewRegisterType src) { // Adding support for a new instruction using our new register type
         dw (0x6000003A | (dest << 21) | (src << 16)); // Emit a 32-bit instruction in this format
     }
 };
-} // end Namespace Emitter
+} // end Namespace Luma
 
 static std::vector <uint8_t> loadBinary(std::string directory) {
     std::ifstream file (directory, std::ios::binary);
