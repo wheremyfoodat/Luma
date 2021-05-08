@@ -161,6 +161,18 @@ class PPCEmitter {
         while (1);
     }
 
+    // Metaprogramming helpers for making a compile-time loop, used to implement the "repeat" directive
+    // Many thanks to https://github.com/fleroviux
+    template <typename T, T Begin,  class Func, T ...Is>
+    constexpr void static_for_impl( Func &&f, std::integer_sequence<T, Is...> ) {
+        ( f( std::integral_constant<T, Begin + Is>{ } ),... );
+    }
+
+    template <typename T, T Begin, T End, class Func >
+    constexpr void static_for( Func &&f ) {
+        static_for_impl <T, Begin>( std::forward<Func>(f), std::make_integer_sequence<T, End - Begin>{ } );
+    }
+
 public:
     PPCEmitter (uintptr_t bufferSize = 64 * 1024) { // Make an emitter object with "bufferSize" bytes of executable memory
         reservedSize = bufferSize;
@@ -230,6 +242,23 @@ public:
         auto remainder = (uintptr_t) getCurr() % bytes;
         while (remainder--) 
             write8 (0);
+    }
+
+    template <size_t end, class Func>
+    constexpr void repeat (Func&& f) {
+        static_for_impl <size_t, 0>( std::forward<Func>(f), std::make_integer_sequence<size_t, end>{ } );
+    }
+
+    template <size_t iterations, GPR counter, class Func>
+    constexpr void loop (Func&& f) {
+        if (iterations == 0) return;         // Do nothing if 0 iterations
+
+        liw (counter, iterations);           // load iterations into counter register
+        const auto label = getCurr();        // Label for loop
+        f();
+        addic <true> (counter, counter, -1); // Decrement counter (need addic. because addi doesn't affect CR)
+        const auto slot = bne();             // Loop if not 0
+        setLabel (slot, label);
     }
 
     constexpr void ud() { write32 (0); } // Undefined opcode (use for debugging)
@@ -392,8 +421,18 @@ public:
     }
 
     template <bool setFlags = false>
+    void sub (GPR dest, GPR src1, GPR src2) { // subf except without reversed operands
+        subf <setFlags> (dest, src2, src1);
+    }
+
+    template <bool setFlags = false>
     void subfo (GPR dest, GPR src1, GPR src2) {
         write32 (0x7C000450 | (dest << 21) | (src1 << 16) | (src2 << 11) | setFlags);
+    }
+
+    template <bool setFlags = false>
+    void subo (GPR dest, GPR src1, GPR src2) { // subfo except without reversed operands
+        subfo <setFlags> (dest, src2, src1);
     }
 
     template <bool setFlags = false>
@@ -402,8 +441,18 @@ public:
     }
 
     template <bool setFlags = false>
+    void subc (GPR dest, GPR src1, GPR src2) { // subfc without reversed operands
+        subfc <setFlags> (dest, src2, src1);
+    }
+
+    template <bool setFlags = false>
     void subfco (GPR dest, GPR src1, GPR src2) {
         write32 (0x7C000410 | (dest << 21) | (src1 << 16) | (src2 << 11) | setFlags);
+    }
+
+    template <bool setFlags = false>
+    void subco (GPR dest, GPR src1, GPR src2) { // subco without reversed operands
+        subfco <setFlags> (dest, src2, src1);
     }
 
     template <bool setFlags = false>
@@ -412,8 +461,18 @@ public:
     }
 
     template <bool setFlags = false>
+    void sube (GPR dest, GPR src1, GPR src2) { // subfe without reversed operands
+        subfe <setFlags> (dest, src2, src1);
+    }
+
+    template <bool setFlags = false>
     void subfeo (GPR dest, GPR src1, GPR src2) {
         write32 (0x7C000510 | (dest << 21) | (src1 << 16) | (src2 << 11) | setFlags);
+    }
+
+    template <bool setFlags = false>
+    void subeo (GPR dest, GPR src1, GPR src2) { // subfeo without reversed operands
+        subfeo <setFlags> (dest, src2, src1);
     }
 
     void subfic (GPR dest, GPR src, int16_t imm) {

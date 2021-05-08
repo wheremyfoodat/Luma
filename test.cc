@@ -344,6 +344,16 @@ int main() {
     gen.mfcr (r9);
     gen.mfcr (r3);
 
+    gen.repeat <10> ([&](auto i) {
+        gen.nop();
+        gen.addi (r0, r1, i);
+    });
+
+    gen.loop <69, r3> ([&]() {
+        gen.nop();
+        gen.isync();
+    });
+
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI
         const auto correctFile = loadBinary (".github/test_binaries/binary1.bin");
