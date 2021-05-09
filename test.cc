@@ -30,9 +30,6 @@ static std::vector <uint8_t> loadBinary(std::string directory) {
     std::vector <uint8_t> vec;
 
     file.unsetf(std::ios::skipws);
-    file.seekg(0, std::ios::end);
-    file.seekg(0, std::ios::beg);
-
     vec.insert(vec.begin(),
                 std::istream_iterator<uint8_t>(file),
                 std::istream_iterator<uint8_t>());
