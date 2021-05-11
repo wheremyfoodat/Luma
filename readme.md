@@ -12,6 +12,7 @@ A PowerPC emitter/dynamic assembler single header library, written in C++
 - Easily customizable, letting you add custom instructions/pseudo-ops/types and more
 - Support for many different helpful pseudo-ops and macros (`liw`, `clrrwi`, `rotlwi`, `rotrwi`, and more)
 - Support for common assembler directives (align, db, dh, dw, dd, df32, df64)
+- Support for lazy loops with the `loop` directive
 - Optionally allows auto-growing of the code buffer (Note: This is slower than using a fixed size buffer, and is also buggy with jumps due to the way they're handled. This will also not work on platforms where execution permissions matter, so you need to handle memory yourself in that case)
 - Easy-to-use label system for jumps/branches
 - Works on both little and big endian (code is emitted at native endianness)
