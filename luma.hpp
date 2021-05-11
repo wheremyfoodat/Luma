@@ -261,8 +261,8 @@ public:
         static_for_impl <size_t, 0>( std::forward<Func>(f), std::make_integer_sequence<size_t, end>{ } );
     }
 
-    template <size_t iterations, GPR counter, class Func>
-    constexpr void loop (Func&& f) {
+    template <class Func>
+    constexpr void loop (GPR counter, size_t iterations, Func&& f) {
         if (iterations == 0) return;         // Do nothing if 0 iterations
 
         liw (counter, iterations);           // load iterations into counter register

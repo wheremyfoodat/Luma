@@ -344,7 +344,7 @@ int main() {
         gen.addi (r0, r1, i);
     });
 
-    gen.loop <69, r3> ([&]() { // test loop directive (should emit a 69 iteration loop of nop and isync, using r3 as counter)
+    gen.loop (r3, 69, [&]() { // test loop directive (should emit a 69 iteration loop of nop and isync, using r3 as counter)
         gen.nop();
         gen.isync();
     });
