@@ -1322,6 +1322,10 @@ public:
         write32 (0x1000004A | (dest << 21) | (src1 << 16) | (src2 << 11));
     }
 
+    void vrefp (VR dest, VR src) { // Vector Reciprocal Estimate Floating-Point
+        write32 (0x1000010A | (dest << 21) | (src << 11));
+    }
+
     void vand (VR dest, VR src1, VR src2) { // Vector logical and
         write32 (0x10000404 | (dest << 21) | (src1 << 16) | (src2 << 11));
     }

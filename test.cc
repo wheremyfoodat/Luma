@@ -359,6 +359,7 @@ int main() {
     gen.vand (v30, v13, v12);
     gen.vandc (v15, v12, v0);
     gen.vperm (v1, v10, v20, v30);
+    gen.vrefp (v17, v23);
 
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI
