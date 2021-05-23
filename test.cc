@@ -25,17 +25,9 @@ public:
 };
 } // end Namespace Luma
 
-static std::vector <uint8_t> loadBinary(std::string directory) {
-    std::ifstream file (directory, std::ios::binary);
-    std::vector <uint8_t> vec;
-
-    file.unsetf(std::ios::skipws);
-    vec.insert(vec.begin(),
-                std::istream_iterator<uint8_t>(file),
-                std::istream_iterator<uint8_t>());
-
-    file.close();
-    return vec;
+static std::vector <uint8_t> loadBinary(std::string path) {
+    std::basic_ifstream <uint8_t> file{path, std::ios::binary};
+    return { std::istreambuf_iterator <uint8_t> {file}, {} };
 }
 
 int main() {
@@ -358,6 +350,7 @@ int main() {
     gen.vxor (v1, v2, v3);
     gen.vand (v30, v13, v12);
     gen.vandc (v15, v12, v0);
+    gen.vperm (v1, v10, v20, v30);
 
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI

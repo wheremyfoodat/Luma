@@ -1341,5 +1341,9 @@ public:
     void vxor (VR dest, VR src1, VR src2) { // Vector bitwise xor
         write32 (0x100004C4 | (dest << 21) | (src1 << 16) | (src2 << 11));
     }
+
+    void vperm (VR dest, VR src1, VR src2, VR src3) { // Vector permute
+        write32 (0x1000002B | (dest << 21) | (src1 << 16) | (src2 << 11) | (src3 << 6));
+    }
 };
 } // End Namespace Luma
