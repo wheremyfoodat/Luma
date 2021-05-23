@@ -25,9 +25,17 @@ public:
 };
 } // end Namespace Luma
 
-static std::vector <uint8_t> loadBinary(std::string path) {
-    std::basic_ifstream <uint8_t> file{path, std::ios::binary};
-    return { std::istreambuf_iterator <uint8_t> {file}, {} };
+static std::vector <uint8_t> loadBinary(std::string directory) {
+    std::ifstream file (directory, std::ios::binary);
+    std::vector <uint8_t> vec;
+
+    file.unsetf(std::ios::skipws);
+    vec.insert(vec.begin(),
+                std::istream_iterator<uint8_t>(file),
+                std::istream_iterator<uint8_t>());
+
+    file.close();
+    return vec;
 }
 
 int main() {
