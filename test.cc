@@ -352,6 +352,13 @@ int main() {
     gen.ds ("*boop* *boop* *boop*"); // test C-strings
     gen.ds (std::string("*boop* *boop* *boop*")); // test std::strings
 
+    gen.align (4);
+    gen.vnor (v9, v3, v4);
+    gen.vor (v10, v31, v20);
+    gen.vxor (v1, v2, v3);
+    gen.vand (v30, v13, v12);
+    gen.vandc (v15, v12, v0);
+
     // Time to check the code for regressions
     if (RUNNING_IN_CI) { // Check if this is running in CI
         const auto correctFile = loadBinary (".github/test_binaries/binary1.bin");

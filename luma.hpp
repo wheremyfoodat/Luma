@@ -1318,8 +1318,28 @@ public:
 		write32 (0x1000000A | (dest << 21) | (src1 << 16) | (src2 << 11));
 	}
 
-    void vsubfp (VR dest, VR src1, VR src2) { // Vector sub Floating-Point (32-bit)
+    void vsubfp (VR dest, VR src1, VR src2) { // Vector Sub Floating-Point (32-bit)
         write32 (0x1000004A | (dest << 21) | (src1 << 16) | (src2 << 11));
+    }
+
+    void vand (VR dest, VR src1, VR src2) { // Vector logical and
+        write32 (0x10000404 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    }
+
+    void vandc (VR dest, VR src1, VR src2) { // Vector logical and with complement
+        write32 (0x10000444 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    }
+
+    void vor (VR dest, VR src1, VR src2) { // Vector logical or
+        write32 (0x10000484 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    }
+
+    void vnor (VR dest, VR src1, VR src2) { // Vector logical nor
+        write32 (0x10000504 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    }
+
+    void vxor (VR dest, VR src1, VR src2) { // Vector bitwise xor
+        write32 (0x100004C4 | (dest << 21) | (src1 << 16) | (src2 << 11));
     }
 };
 } // End Namespace Luma
