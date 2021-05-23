@@ -240,7 +240,7 @@ public:
         db ('\0'); // copy null terminator
     }
 
-    constexpr void ds (std::string str) {
+    void ds (std::string str) {
         ds (str.c_str());
     }
 
