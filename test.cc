@@ -315,7 +315,7 @@ int main() {
     gen.align (4); // test aligning to a word boundary
     gen.andis (r25, r28, 123);
     gen.dss (2);
-    gen.dssall();
+    gen.dssall (2);
     gen.li (r9, -10);
     gen.li (r8, 10);
     gen.liu (r9, 0xFFFE);

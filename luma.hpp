@@ -96,12 +96,12 @@ enum class BranchType {
     Branch14, Branch24
 };
 
-enum class GrowingMode {
+enum GrowingMode {
     FixedSize,
     AutoGrow
 };
 
-template <GrowingMode growMode = GrowingMode::FixedSize>
+template <GrowingMode growMode = FixedSize>
 class PPCEmitter {
     uint32_t* code = nullptr; // Pointer to the code buffer
     uint32_t* currentPointer = nullptr; // Pointer to the current address in the code buffer
@@ -114,7 +114,7 @@ class PPCEmitter {
     // Used to implement write8, write16, write32, write64 and subsequently, db, dh, dw, and dd
     template <typename T>
     constexpr void write (T val) {
-        if constexpr (growMode == GrowingMode::AutoGrow) {
+        if constexpr (growMode == AutoGrow) {
             const auto currentSize = getCodeSize();
 
             if (currentSize + sizeof(T) >= reservedSize) { // if buffer will overflow, automatically grow it by 64KB
@@ -1758,7 +1758,7 @@ public:
         write32 (0x1000018A | (dest << 21) | (src << 11));
     }
 
-    void vexptefp (VR dest, VR src) { // Vector Log2 Estimate Floating-point
+    void vlogefp (VR dest, VR src) { // Vector Log2 Estimate Floating-point
         write32 (0x100001CA | (dest << 21) | (src << 11));
     }
 
