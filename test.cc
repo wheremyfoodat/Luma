@@ -53,7 +53,7 @@ int main() {
     gen.lhz (r2, r1, -16);
     gen.setLabel (label2, a);
 
-    gen.lhzu (r1, r1, -69);
+    gen.lhzu (r1, r2, -69);
     gen.lbzu (r0, r31, 0);
     gen.lbz (r0, r1, 1);
     gen.lbzux (r0, r1, r2);
@@ -63,7 +63,7 @@ int main() {
     gen.lwzx (r31, r30, r29);
     gen.lwzux (r2, r30, r31);
 
-    gen.lmw (r0, r31, -120);
+    gen.lmw (r31, r15, -120);
     gen.stmw (r29, r30, -4040);
     gen.stwux (r0, r10, r3);
     gen.stwx (r9, r12, r3);
@@ -75,7 +75,6 @@ int main() {
 
     gen.stfd (f0, r4, -8);
     gen.lfd (f19, r8, -90);
-    // gen.ps_madd (f0, f2, f4, f6);
     gen.vaddfp (v1, v2, v0);
     gen.fmr <false> (f0, f31);
     gen.fmr <true> (f0, f31);
@@ -104,8 +103,8 @@ int main() {
     gen.fnmsub <true> (f1, f10, f20, f30);
     gen.fnmsubs <false> (f21, f11, f1, f31);
     gen.fnmsubs <true> (f21, f11, f1, f31);
-    gen.frsqte <false> (f0, f10);
-    gen.frsqte <true> (f0, f10);
+    gen.frsqrte <false> (f0, f10);
+    gen.frsqrte <true> (f0, f10);
     gen.frsp (f1, f2);
     gen.fres (f10, f20);
     gen.fsel <false> (f1, f0, f10, f20);
@@ -180,10 +179,10 @@ int main() {
     gen.mulhwu <false> (r1, r3, r5); 
     gen.mulhwu <true> (r1, r3, r5);
 
-    gen.divwu <true> (r0, r9, r13);
     gen.divwu <false> (r0, r9, r13);
-    gen.divwuo <true> (r13, sp, r15);
+    gen.divwu <true> (r0, r9, r13);
     gen.divwuo <false> (r13, sp, r15);
+    gen.divwuo <true> (r13, sp, r15);
 
     gen.lhbrx (r1, r3, r4);
     gen.lhax (r2, r4, r6);
@@ -204,12 +203,12 @@ int main() {
     gen.mtctr (r30);
     gen.mfctr (r1);
 
-    gen.and_ <true> (r1, r4, r9);
     gen.and_ <false> (r1, r4, r9);
-    gen.or_ <true> (r7, r10, r2);
+    gen.and_ <true> (r1, r4, r9);
     gen.or_ <false> (r7, r10, r2);
-    gen.xor_ <true> (r1, r12, r23);
+    gen.or_ <true> (r7, r10, r2);
     gen.xor_ <false> (r1, r12, r23);
+    gen.xor_ <true> (r1, r12, r23);
     
     gen.ps_abs (f9, f23);
     gen.ps_abs <true> (f9, f23);
@@ -315,7 +314,7 @@ int main() {
     gen.align (4); // test aligning to a word boundary
     gen.andis (r25, r28, 123);
     gen.dss (2);
-    gen.dssall (2);
+    gen.dssall();
     gen.li (r9, -10);
     gen.li (r8, 10);
     gen.liu (r9, 0xFFFE);

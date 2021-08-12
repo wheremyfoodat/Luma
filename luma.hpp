@@ -539,7 +539,7 @@ public:
 
     template <bool setFlags = false>
     void mullwo (GPR dest, GPR src1, GPR src2) {
-        write32 (0x7C0003D6 | (dest << 21) | (src1 << 16) | (src2 << 11) | setFlags);
+        write32 (0x7C0005D6 | (dest << 21) | (src1 << 16) | (src2 << 11) | setFlags);
     }
 
     template <bool setFlags = false>
@@ -1099,7 +1099,7 @@ public:
     }
 
     template <bool setFlags = false> 
-    void frsqte (FPR dest, FPR src) { // Floating reciprocal square root estimate
+    void frsqrte (FPR dest, FPR src) { // Floating reciprocal square root estimate
         write32 (0xFC000034 | (dest << 21) | (src << 11) | setFlags);
     }
 
@@ -1946,8 +1946,8 @@ public:
         write32 (0x7C00066C | (stream << 21));
     }
 
-    void dssall (uint8_t stream) { // Data Stream Stop All
-        write32 (0x7E00066C | (stream << 21));
+    void dssall() { // Data Stream Stop All
+        write32 (0x7E00066C);
     }
 
     void lvebx (VR dest, GPR base, GPR offset) { // Load Vector Element Byte Indexed
