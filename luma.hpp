@@ -66,13 +66,13 @@ enum FPR {
 // AltiVec Vector Registers
 enum VR {
     // Volatiles
-	v0 = 0, v1, v2, v3, v4, v5, v6, v7, v8,
-	v9, v10, v11, v12, v13, v14, v15, v16,
-	v17, v18, v19,
+    v0 = 0, v1, v2, v3, v4, v5, v6, v7, v8,
+    v9, v10, v11, v12, v13, v14, v15, v16,
+    v17, v18, v19,
     
     // Non-volatiles
     v20, v21, v22, v23, v24,
-	v25, v26, v27, v28, v29, v30, v31
+    v25, v26, v27, v28, v29, v30, v31
 };
 
 // Segment registers
@@ -96,12 +96,12 @@ enum class BranchType {
     Branch14, Branch24
 };
 
-enum GrowingMode {
-    FixedSize = 0,
+enum class GrowingMode {
+    FixedSize,
     AutoGrow
 };
 
-template <GrowingMode growMode = FixedSize>
+template <GrowingMode growMode = GrowingMode::FixedSize>
 class PPCEmitter {
     uint32_t* code = nullptr; // Pointer to the code buffer
     uint32_t* currentPointer = nullptr; // Pointer to the current address in the code buffer
@@ -290,12 +290,12 @@ public:
     }
 
     void liu (GPR reg, uint16_t imm) { // Load immediate (unsigned)
-    	if (imm < 0x8000) // For immediates < 0x8000, we can use a single addi
-    		li (reg, imm);
-    	else {
-    		li (reg, 0); // set register to 0.
-    		ori (reg, reg, imm); // or register with immediate
-    	}
+        if (imm < 0x8000) // For immediates < 0x8000, we can use a single addi
+            li (reg, imm);
+        else {
+            li (reg, 0); // set register to 0.
+            ori (reg, reg, imm); // or register with immediate
+        }
     }
 
     void setz (GPR dest, GPR src) { // Set dest to 1 if src is 0, otherwise set dest to 0
