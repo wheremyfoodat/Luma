@@ -8,7 +8,6 @@
 #include "luma.hpp"
 using namespace Luma;
 
-
 // Example of making a derived class to add custom extensions
 namespace Luma { // Extend Emitter namespace to add new types
 enum FancyNewRegisterType { // Defining an enum for a hypothetical new register type

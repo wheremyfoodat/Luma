@@ -1926,20 +1926,20 @@ public:
         write32 (0x7C00004C | (dest << 21) | (op1 << 16) | (op2 << 11));
     }
 
-    void dst (uint8_t stream, GPR base, GPR prefetch_control) { // Data Stream Touch
-        write32 (0x7C0002AC | (stream << 21) | (base << 16) | (prefetch_control << 11));
+    void dst (uint8_t stream, GPR base, GPR prefetchControl) { // Data Stream Touch
+        write32 (0x7C0002AC | (stream << 21) | (base << 16) | (prefetchControl << 11));
     }
 
-    void dstt (uint8_t stream, GPR base, GPR prefetch_control) { // Data Stream Touch (Transient)
-        write32 (0x7E0002AC | (stream << 21) | (base << 16) | (prefetch_control << 11));
+    void dstt (uint8_t stream, GPR base, GPR prefetchControl) { // Data Stream Touch (Transient)
+        write32 (0x7E0002AC | (stream << 21) | (base << 16) | (prefetchControl << 11));
     }
 
-    void dstst (uint8_t stream, GPR base, GPR prefetch_control) { // Data Stream Touch for Store
-        write32 (0x7C0002EC | (stream << 21) | (base << 16) | (prefetch_control << 11));
+    void dstst (uint8_t stream, GPR base, GPR prefetchControl) { // Data Stream Touch for Store
+        write32 (0x7C0002EC | (stream << 21) | (base << 16) | (prefetchControl << 11));
     }
 
-    void dststt (uint8_t stream, GPR base, GPR prefetch_control) { // Data Stream Touch for Store (Transient)
-        write32 (0x7E0002EC | (stream << 21) | (base << 16) | (prefetch_control << 11));
+    void dststt (uint8_t stream, GPR base, GPR prefetchControl) { // Data Stream Touch for Store (Transient)
+        write32 (0x7E0002EC | (stream << 21) | (base << 16) | (prefetchControl << 11));
     }
 
     void dss (uint8_t stream) { // Data Stream Stop
