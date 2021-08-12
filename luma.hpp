@@ -63,11 +63,16 @@ enum FPR {
     f30 = 30, f31 = 31
 };
 
-enum VR { // AltiVec Vector Registers
-	v0 = 0, v1, v2, v3, v4, v5, v6, v7, v8,
-	v9, v10, v11, v12, v13, v14, v15, v16,
-	v17, v18, v19, v20, v21, v22, v23, v24,
-	v25, v26, v27, v28, v29, v30, v31
+// AltiVec Vector Registers
+enum VR {
+    // Volatiles
+    v0 = 0, v1, v2, v3, v4, v5, v6, v7, v8,
+    v9, v10, v11, v12, v13, v14, v15, v16,
+    v17, v18, v19,
+    
+    // Non-volatiles
+    v20, v21, v22, v23, v24,
+    v25, v26, v27, v28, v29, v30, v31
 };
 
 // Segment registers
@@ -96,7 +101,7 @@ enum GrowingMode {
     AutoGrow
 };
 
-template <GrowingMode growMode = GrowingMode::FixedSize>
+template <GrowingMode growMode = FixedSize>
 class PPCEmitter {
     uint32_t* code = nullptr; // Pointer to the code buffer
     uint32_t* currentPointer = nullptr; // Pointer to the current address in the code buffer
@@ -109,7 +114,7 @@ class PPCEmitter {
     // Used to implement write8, write16, write32, write64 and subsequently, db, dh, dw, and dd
     template <typename T>
     constexpr void write (T val) {
-        if constexpr (growMode == GrowingMode::AutoGrow) {
+        if constexpr (growMode == AutoGrow) {
             const auto currentSize = getCodeSize();
 
             if (currentSize + sizeof(T) >= reservedSize) { // if buffer will overflow, automatically grow it by 64KB
@@ -285,12 +290,12 @@ public:
     }
 
     void liu (GPR reg, uint16_t imm) { // Load immediate (unsigned)
-    	if (imm < 0x8000) // For immediates < 0x8000, we can use a single addi
-    		li (reg, imm);
-    	else {
-    		li (reg, 0); // set register to 0.
-    		ori (reg, reg, imm); // or register with immediate
-    	}
+        if (imm < 0x8000) // For immediates < 0x8000, we can use a single addi
+            li (reg, imm);
+        else {
+            li (reg, 0); // set register to 0.
+            ori (reg, reg, imm); // or register with immediate
+        }
     }
 
     void setz (GPR dest, GPR src) { // Set dest to 1 if src is 0, otherwise set dest to 0
@@ -534,7 +539,7 @@ public:
 
     template <bool setFlags = false>
     void mullwo (GPR dest, GPR src1, GPR src2) {
-        write32 (0x7C0003D6 | (dest << 21) | (src1 << 16) | (src2 << 11) | setFlags);
+        write32 (0x7C0005D6 | (dest << 21) | (src1 << 16) | (src2 << 11) | setFlags);
     }
 
     template <bool setFlags = false>
@@ -1094,7 +1099,7 @@ public:
     }
 
     template <bool setFlags = false> 
-    void frsqte (FPR dest, FPR src) { // Floating reciprocal square root estimate
+    void frsqrte (FPR dest, FPR src) { // Floating reciprocal square root estimate
         write32 (0xFC000034 | (dest << 21) | (src << 11) | setFlags);
     }
 
@@ -1308,46 +1313,681 @@ public:
     }
 
     // AltiVec SIMD ISA
+
+    void vmhaddshs (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply High and Add Signed Half Word Saturate
+        write32 (0x10000020 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vmhraddshs (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply High Round and Add Signed Half Word Saturate
+        write32 (0x10000021 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vmladdshs (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply Low and Add Signed Half Word Saturate
+        write32 (0x10000022 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vmsumubm (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply Sum Unsigned Byte Modulo
+        write32 (0x10000024 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vmsummbm (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply Sum Mixed-Sign Byte Modulo
+        write32 (0x10000025 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vmsumuhm (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply Sum Unsigned Half Word Modulo
+        write32 (0x10000026 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vmsumuhs (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply Sum unsigned Half Word Saturate
+        write32 (0x10000027 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vmsumshm (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply Sum Signed Half Word Modulo
+        write32 (0x10000028 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vmsumshs (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply Sum Signed Half Word Saturate
+        write32 (0x10000029 | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+    
+    void vsel (VR dest, VR op1, VR op2, VR op3) { // Vector Conditional Select
+        write32 (0x1000002A | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+
+    void vperm (VR dest, VR op1, VR op2, VR op3) { // Vector Permute
+        write32 (0x1000002B | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+
+    void vsldoi (VR dest, VR op1, VR op2, uint8_t shift) { // Vector Shift Left Double by Octet Immediate
+        write32 (0x1000002C | (dest << 21) | (op1 << 16) | (op2 << 11) | (shift << 6));
+    }
+
+    void vmaddfp (VR dest, VR op1, VR op2, VR op3) { // Vector Multiply Add Floating-Point
+        write32 (0x1000002E | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+
+    void vnmsubfp (VR dest, VR op1, VR op2, VR op3) { // Vector Negative Multiply-Subtract Floating-Point
+        write32 (0x1000002F | (dest << 21) | (op1 << 16) | (op2 << 11) | (op3 << 6));
+    }
+
+    void vaddubm (VR dest, VR op1, VR op2) { // Vector Add Unsigned Byte Modulo
+        write32 (0x10000000 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vadduhm (VR dest, VR op1, VR op2) { // Vector Add Unsigned Half Word Modulo
+        write32 (0x10000040 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vadduwm (VR dest, VR op1, VR op2) { // Vector Add Unsigned Word Modulo
+        write32 (0x10000080 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vaddcuw (VR dest, VR op1, VR op2) { // Vector Add Carryout Unsigned Word
+        write32 (0x10000180 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vaddubs (VR dest, VR op1, VR op2) { // Vector Add Unsigned Byte Saturate
+        write32 (0x10000200 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vadduhs (VR dest, VR op1, VR op2) { // Vector Add Unsigned Half Word Saturate
+        write32 (0x10000240 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vadduws (VR dest, VR op1, VR op2) { // Vector Add Unsigned Word Saturate
+        write32 (0x10000280 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vaddsbs (VR dest, VR op1, VR op2) { // Vector Add Signed Byte Saturate
+        write32 (0x10000300 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vaddshs (VR dest, VR op1, VR op2) { // Vector Add Signed Half Word Saturate
+        write32 (0x10000340 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vaddsws (VR dest, VR op1, VR op2) { // Vector Add Signed Word Saturate
+        write32 (0x10000380 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsububm (VR dest, VR op1, VR op2) { // Vector Subtract Unsigned Byte Modulo
+        write32 (0x10000400 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubuhm (VR dest, VR op1, VR op2) { // Vector Subtract Unsigned Half Word Modulo
+        write32 (0x10000440 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubuwm (VR dest, VR op1, VR op2) { // Vector Subtract Unsigned Word Modulo
+        write32 (0x10000480 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubcuw (VR dest, VR op1, VR op2) { // Vector Subtract Carryout Unsigned Word
+        write32 (0x10000580 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsububs (VR dest, VR op1, VR op2) { // Vector Subtract Unsigned Byte Saturate
+        write32 (0x10000600 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubuhs (VR dest, VR op1, VR op2) { // Vector Subtract Unsigned Half Word Saturate
+        write32 (0x10000640 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubuws (VR dest, VR op1, VR op2) { // Vector Subtract Unsigned Word Saturate
+        write32 (0x10000680 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubsbs (VR dest, VR op1, VR op2) { // Vector Subtract Signed Byte Saturate
+        write32 (0x10000700 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubshs (VR dest, VR op1, VR op2) { // Vector Subtract Signed Half Word Saturate
+        write32 (0x10000740 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubsws (VR dest, VR op1, VR op2) { // Vector Subtract Signed Word Saturate
+        write32 (0x10000780 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmaxub (VR dest, VR op1, VR op2) { // Vector Maximum Unsigned Byte
+        write32 (0x10000002 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmaxuh (VR dest, VR op1, VR op2) { // Vector Maximum Unsigned Half Word
+        write32 (0x10000042 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmaxuw (VR dest, VR op1, VR op2) { // Vector Maximum Unsigned Word
+        write32 (0x10000082 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmaxsb (VR dest, VR op1, VR op2) { // Vector Maximum Signed Byte
+        write32 (0x10000102 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmaxsh (VR dest, VR op1, VR op2) { // Vector Maximum Signed Half Word
+        write32 (0x10000142 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmaxsw (VR dest, VR op1, VR op2) { // Vector Maximum Signed Word
+        write32 (0x10000182 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vminub (VR dest, VR op1, VR op2) { // Vector Minimum Unsigned Byte
+        write32 (0x10000202 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vminuh (VR dest, VR op1, VR op2) { // Vector Minimum Unsigned Half Word
+        write32 (0x10000242 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vminuw (VR dest, VR op1, VR op2) { // Vector Minimum Unsigned Word
+        write32 (0x10000282 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vminsb (VR dest, VR op1, VR op2) { // Vector Minimum Signed Byte
+        write32 (0x10000302 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vminsh (VR dest, VR op1, VR op2) { // Vector Minimum Signed Half Word
+        write32 (0x10000342 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vminsw (VR dest, VR op1, VR op2) { // Vector Minimum Signed Word
+        write32 (0x10000382 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vavgub (VR dest, VR op1, VR op2) { // Vector Average Unsigned Byte
+        write32 (0x10000402 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vavguh (VR dest, VR op1, VR op2) { // Vector Average Unsigned Half Word
+        write32 (0x10000442 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vavguw (VR dest, VR op1, VR op2) { // Vector Average Unsigned Word
+        write32 (0x10000482 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vavgsb (VR dest, VR op1, VR op2) { // Vector Average Signed Byte
+        write32 (0x10000502 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vavgsh (VR dest, VR op1, VR op2) { // Vector Average Signed Half Word
+        write32 (0x10000542 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vavgsw (VR dest, VR op1, VR op2) { // Vector Average Signed Word
+        write32 (0x10000582 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vrlb (VR dest, VR op1, VR op2) { // Vector Rotate Left Integer Byte
+        write32 (0x10000004 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vrlh (VR dest, VR op1, VR op2) { // Vector Rotate Left Integer Half Word
+        write32 (0x10000044 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vrlw (VR dest, VR op1, VR op2) { // Vector Rotate Left Integer Word
+        write32 (0x10000084 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vslb (VR dest, VR op1, VR op2) { // Vector Shift Left Integer Byte
+        write32 (0x10000104 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vslh (VR dest, VR op1, VR op2) { // Vector Shift Left Integer Half Word
+        write32 (0x10000144 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vslw (VR dest, VR op1, VR op2) { // Vector Shift Left Integer Word
+        write32 (0x10000184 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsl (VR dest, VR op1, VR op2) { // Vector Shift Left
+        write32 (0x100001C4 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsrb (VR dest, VR op1, VR op2) { // Vector Shift Right Integer Byte
+        write32 (0x10000204 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsrh (VR dest, VR op1, VR op2) { // Vector Shift Right Integer Half Word
+        write32 (0x10000244 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsrw (VR dest, VR op1, VR op2) { // Vector Shift Right Integer Word
+        write32 (0x10000284 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsr (VR dest, VR op1, VR op2) { // Vector Shift Right
+        write32 (0x100002C4 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsrab (VR dest, VR op1, VR op2) { // Vector Shift Right Algebraic Integer Byte
+        write32 (0x10000304 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsrah (VR dest, VR op1, VR op2) { // Vector Shift Right Algebraic Integer Half Word
+        write32 (0x10000344 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsraw (VR dest, VR op1, VR op2) { // Vector Shift Right Algebraic Integer Word
+        write32 (0x10000384 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vand (VR dest, VR op1, VR op2) { // Vector Logical AND
+        write32 (0x10000404 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vandc (VR dest, VR op1, VR op2) { // Vector Logical AND with Complement
+        write32 (0x10000444 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vor (VR dest, VR op1, VR op2) { // Vector Logical OR
+        write32 (0x10000484 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vxor (VR dest, VR op1, VR op2) { // Vector Logical XOR
+        write32 (0x100004C4 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vnor (VR dest, VR op1, VR op2) { // Vector Logical NOR
+        write32 (0x10000504 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void mfvscr (VR dest) { // Move from Vector Status and Control Register
+        write32 (0x10000604 | (dest << 21));
+    }
+
+    void mtvscr (VR dest) { // Move to Vector Status and Control Register
+        write32 (0x10000644 | (dest << 21));
+    }
+
+    template <bool setFlags = false>
+    void vcmpequb (VR dest, VR op1, VR op2) { // Vector Compare Equal-to Unsigned Byte
+        write32 (0x10000006 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpequh (VR dest, VR op1, VR op2) { // Vector Compare Equal-to Unsigned Half Word
+        write32 (0x10000046 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpequw (VR dest, VR op1, VR op2) { // Vector Compare Equal-to Unsigned Word
+        write32 (0x10000086 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpeqfp (VR dest, VR op1, VR op2) { // Vector Compare Equal-to Floating-point
+        write32 (0x100000C6 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgeub (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than-or-Equal-to Unsigned Byte
+        write32 (0x10000106 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgeuh (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than-or-Equal-to Unsigned Half Word
+        write32 (0x10000146 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgeuw (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than-or-Equal-to Unsigned Word
+        write32 (0x10000186 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgefp (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than-or-Equal-to Floating-point
+        write32 (0x100001C6 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgtub (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than Unsigned Byte
+        write32 (0x10000206 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgtuh (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than Unsigned Half Word
+        write32 (0x10000246 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgtuw (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than Unsigned Word
+        write32 (0x10000286 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgtfp (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than Floating-point
+        write32 (0x100002C6 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgtsb (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than Signed Byte
+        write32 (0x10000306 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgtsh (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than Signed Half Word
+        write32 (0x10000346 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpgtsw (VR dest, VR op1, VR op2) { // Vector Compare Greater-Than Signed Word
+        write32 (0x10000386 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    template <bool setFlags = false>
+    void vcmpbfp (VR dest, VR op1, VR op2) { // Vector Compare Bounds Floating=point
+        write32 (0x100003C6 | (dest << 21) | (op1 << 16) | (op2 << 11) | (setFlags << 10));
+    }
+
+    void vmuloub (VR dest, VR op1, VR op2) { // Vector Multiply Odd Unsigned Byte
+        write32 (0x10000008 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmulouh (VR dest, VR op1, VR op2) { // Vector Multiply Odd Unsigned Half Word
+        write32 (0x10000048 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmulosb (VR dest, VR op1, VR op2) { // Vector Multiply Odd Signed Byte
+        write32 (0x10000108 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmulosh (VR dest, VR op1, VR op2) { // Vector Multiply Odd Signed Half Word
+        write32 (0x10000148 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmuleub (VR dest, VR op1, VR op2) { // Vector Multiply Even Unsigned Byte
+        write32 (0x10000208 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmuleuh (VR dest, VR op1, VR op2) { // Vector Multiply Even Unsigned Half Word
+        write32 (0x10000248 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmulesb (VR dest, VR op1, VR op2) { // Vector Multiply Even Signed Byte
+        write32 (0x10000308 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmulesh (VR dest, VR op1, VR op2) { // Vector Multiply Even Signed Half Word
+        write32 (0x10000348 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsum4ubs (VR dest, VR op1, VR op2) { // Vector Sum Across Partial (1/4) Unsigned Byte Saturate
+        write32 (0x10000608 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsum4sbs (VR dest, VR op1, VR op2) { // Vector Sum Across Partial (1/4) Signed Byte Saturate
+        write32 (0x10000708 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsum4shs (VR dest, VR op1, VR op2) { // Vector Sum Across Partial (1/4) Signed Half Word Saturate
+        write32 (0x10000648 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsum2sws (VR dest, VR op1, VR op2) { // Vector Sum Across Partial (1/2) Signed Word Saturate
+        write32 (0x10000688 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsumsws (VR dest, VR op1, VR op2) { // Vector Sum Across Signed Word Saturate
+        write32 (0x10000788 | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vaddfp (VR dest, VR op1, VR op2) { // Vector Add Floating-point
+        write32 (0x1000000A | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsubfp (VR dest, VR op1, VR op2) { // Vector Subtract Floating-point
+        write32 (0x1000004A | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vrefp (VR dest, VR src) { // Vector Reciprocal Estimate Floating-point
+        write32 (0x1000010A | (dest << 21) | (src << 11));
+    }
+
+    void vrsqrtefp (VR dest, VR src) { // Vector Reciprocal Square Root Estimate Floating-point
+        write32 (0x1000014A | (dest << 21) | (src << 11));
+    }
+
+    void vexptefp (VR dest, VR src) { // Vector 2 Raised to the Exponent Estimate Floating-point
+        write32 (0x1000018A | (dest << 21) | (src << 11));
+    }
+
+    void vlogefp (VR dest, VR src) { // Vector Log2 Estimate Floating-point
+        write32 (0x100001CA | (dest << 21) | (src << 11));
+    }
+
+    void vrfin (VR dest, VR src) { // Vector Round to Floating-point Integer Nearest
+        write32 (0x1000020A | (dest << 21) | (src << 11));
+    }
+
+    void vrfiz (VR dest, VR src) { // Vector Round to Floating-point Integer Toward Zero
+        write32 (0x1000024A | (dest << 21) | (src << 11));
+    }
+
+    void vrfip (VR dest, VR src) { // Vector Round to Floating-point Integer Toward Plus Infinity
+        write32 (0x1000028A | (dest << 21) | (src << 11));
+    }
+
+    void vrfim (VR dest, VR src) { // Vector Round to Floating-point Integer Toward Minus Infinity
+        write32 (0x100002CA | (dest << 21) | (src << 11));
+    }
+
+    void vcfux (VR dest, uint8_t exponent, VR src) { // Vector Convert from Unsigned Fixed-Point Word
+        write32 (0x1000030A | (dest << 21) | (exponent << 16) | (src << 11));
+    }
+
+    void vcfsx (VR dest, uint8_t exponent, VR src) { // Vector Convert from Signed Fixed-Point Word
+        write32 (0x1000034A | (dest << 21) | (exponent << 16) | (src << 11));
+    }
+
+    void vctuxs (VR dest, uint8_t exponent, VR src) { // Vector Convert to Unsigned Fixed-Point Word Saturate
+        write32 (0x1000038A | (dest << 21) | (exponent << 16) | (src << 11));
+    }
+
+    void vctsxs (VR dest, uint8_t exponent, VR src) { // Vector Convert to Signed Fixed-Point Word Saturate
+        write32 (0x100003CA | (dest << 21) | (exponent << 16) | (src << 11));
+    }
+
+    void vmaxfp (VR dest, VR op1, VR op2) { // Vector Maximum Floating-point
+        write32 (0x1000040A | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vminfp (VR dest, VR op1, VR op2) { // Vector Minimum Floating-point
+        write32 (0x1000044A | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmrghb (VR dest, VR op1, VR op2) { // Vector Merge High Byte
+        write32 (0x1000000C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmrghh (VR dest, VR op1, VR op2) { // Vector Merge High Half Word
+        write32 (0x1000004C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmrghw (VR dest, VR op1, VR op2) { // Vector Merge High Word
+        write32 (0x1000008C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmrglb (VR dest, VR op1, VR op2) { // Vector Merge Low Byte
+        write32 (0x1000010C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmrglh (VR dest, VR op1, VR op2) { // Vector Merge Low Half Word
+        write32 (0x1000014C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vmrglw (VR dest, VR op1, VR op2) { // Vector Merge Low Word
+        write32 (0x1000018C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vspltb (VR dest, VR src, uint8_t element) { // Vector Splat Byte
+        write32 (0x1000020C | (dest << 21) | (element << 16) | (src << 11));
+    }
+
+    void vsplth (VR dest, VR src, uint8_t element) { // Vector Splat Half Word
+        write32 (0x1000024C | (dest << 21) | (element << 16) | (src << 11));
+    }
+
+    void vspltw (VR dest, VR src, uint8_t element) { // Vector Splat Word
+        write32 (0x1000028C | (dest << 21) | (element << 16) | (src << 11));
+    }
+
+    void vspltisb (VR dest, int8_t imm) { // Vector Splat Immediate Signed Byte
+        write32 (0x1000030C | (dest << 21) | (((uint8_t)imm & 0x1F) << 16));
+    }
+
+    void vspltish (VR dest, int8_t imm) { // Vector Splat Immediate Signed Half Word
+        write32 (0x1000034C | (dest << 21) | (((uint8_t)imm & 0x1F) << 16));
+    }
+
+    void vspltisw (VR dest, int8_t imm) { // Vector Splat Immediate Signed Word
+        write32 (0x1000038C | (dest << 21) | (((uint8_t)imm & 0x1F) << 16));
+    }
+
+    void vslo (VR dest, VR op1, VR op2) { // Vector Shift Left by Octet
+        write32 (0x1000040C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vsro (VR dest, VR op1, VR op2) { // Vector Shift Right by Octet
+        write32 (0x1000044C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vpkuhum (VR dest, VR op1, VR op2) { // Vector Pack Unsigned Half Word Unsigned Modulo
+        write32 (0x1000000E | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vpkuwum (VR dest, VR op1, VR op2) { // Vector Pack Unsigned Word Unsigned Modulo
+        write32 (0x1000004E | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vpkuhus (VR dest, VR op1, VR op2) { // Vector Pack Unsigned Half Word Unsigned Saturate
+        write32 (0x1000008E | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vpkuwus (VR dest, VR op1, VR op2) { // Vector Pack Unsigned Word Unsigned Saturate
+        write32 (0x100000CE | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vpkshus (VR dest, VR op1, VR op2) { // Vector Pack Signed Half Word Unsigned Saturate
+        write32 (0x1000010E | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vpkswus (VR dest, VR op1, VR op2) { // Vector Pack Signed Word Unsigned Saturate
+        write32 (0x1000014E | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vpkshss (VR dest, VR op1, VR op2) { // Vector Pack Signed Half Word Signed Saturate
+        write32 (0x1000018E | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vpkswss (VR dest, VR op1, VR op2) { // Vector Pack Signed Word Signed Saturate
+        write32 (0x100001CE | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vupkhsb (VR dest, VR src) { // Vector Pack Signed Half Word Unsigned Saturate
+        write32 (0x1000020E | (dest << 21) | (src << 11));
+    }
+
+    void vupkhsh (VR dest, VR src) { // Vector Pack Signed Word Unsigned Saturate
+        write32 (0x1000024E | (dest << 21) | (src << 11));
+    }
+
+    void vupklsb (VR dest, VR src) { // Vector Unpack Low Signed Byte
+        write32 (0x1000028E | (dest << 21) | (src << 11));
+    }
+
+    void vupklsh (VR dest, VR src) { // Vector Unpack Low Signed Half Word
+        write32 (0x100002CE | (dest << 21) | (src << 11));
+    }
+
+    void vpkpx (VR dest, VR op1, VR op2) { // Vector Pack Pixel32
+        write32 (0x1000030E | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void vupkhpx (VR dest, VR src) { // Vector Unpack High Pixel16
+        write32 (0x1000034E | (dest << 21) | (src << 11));
+    }
+
+    void vupklpx (VR dest, VR src) { // Vector Unpack Low Pixel16
+        write32 (0x100003CE | (dest << 21) | (src << 11));
+    }
+
+    void lvsl (VR dest, GPR op1, GPR op2) { // Load Vector for Shift Left
+        write32 (0x7C00000C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void lvsr (VR dest, GPR op1, GPR op2) { // Load Vector for Shift Right
+        write32 (0x7C00004C | (dest << 21) | (op1 << 16) | (op2 << 11));
+    }
+
+    void dst (uint8_t stream, GPR base, GPR prefetch_control) { // Data Stream Touch
+        write32 (0x7C0002AC | (stream << 21) | (base << 16) | (prefetch_control << 11));
+    }
+
+    void dstt (uint8_t stream, GPR base, GPR prefetch_control) { // Data Stream Touch (Transient)
+        write32 (0x7E0002AC | (stream << 21) | (base << 16) | (prefetch_control << 11));
+    }
+
+    void dstst (uint8_t stream, GPR base, GPR prefetch_control) { // Data Stream Touch for Store
+        write32 (0x7C0002EC | (stream << 21) | (base << 16) | (prefetch_control << 11));
+    }
+
+    void dststt (uint8_t stream, GPR base, GPR prefetch_control) { // Data Stream Touch for Store (Transient)
+        write32 (0x7E0002EC | (stream << 21) | (base << 16) | (prefetch_control << 11));
+    }
+
     void dss (uint8_t stream) { // Data Stream Stop
         write32 (0x7C00066C | (stream << 21));
     }
 
-    void dssall() { write32 (0x7E00066C); } // Data Stream Stop All
-
-    void vaddfp (VR dest, VR src1, VR src2) { // Vector Add Floating-Point (32-bit)
-		write32 (0x1000000A | (dest << 21) | (src1 << 16) | (src2 << 11));
-	}
-
-    void vsubfp (VR dest, VR src1, VR src2) { // Vector Sub Floating-Point (32-bit)
-        write32 (0x1000004A | (dest << 21) | (src1 << 16) | (src2 << 11));
+    void dssall() { // Data Stream Stop All
+        write32 (0x7E00066C);
     }
 
-    void vrefp (VR dest, VR src) { // Vector Reciprocal Estimate Floating-Point
-        write32 (0x1000010A | (dest << 21) | (src << 11));
+    void lvebx (VR dest, GPR base, GPR offset) { // Load Vector Element Byte Indexed
+        write32 (0x7C00000E | (dest << 21) | (base << 16) | (offset << 11));
     }
 
-    void vand (VR dest, VR src1, VR src2) { // Vector logical and
-        write32 (0x10000404 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    void lvehx (VR dest, GPR base, GPR offset) { // Load Vector Element Half Word Indexed
+        write32 (0x7C00004E | (dest << 21) | (base << 16) | (offset << 11));
     }
 
-    void vandc (VR dest, VR src1, VR src2) { // Vector logical and with complement
-        write32 (0x10000444 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    void lvewx (VR dest, GPR base, GPR offset) { // Load Vector Element Word Indexed
+        write32 (0x7C00008E | (dest << 21) | (base << 16) | (offset << 11));
     }
 
-    void vor (VR dest, VR src1, VR src2) { // Vector logical or
-        write32 (0x10000484 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    void lvx (VR dest, GPR base, GPR offset) { // Load Vector Indexed
+        write32 (0x7C0000CE | (dest << 21) | (base << 16) | (offset << 11));
     }
 
-    void vnor (VR dest, VR src1, VR src2) { // Vector logical nor
-        write32 (0x10000504 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    void lvxl (VR dest, GPR base, GPR offset) { // Load Vector Indexed LRU
+        write32 (0x7C0002CE | (dest << 21) | (base << 16) | (offset << 11));
     }
 
-    void vxor (VR dest, VR src1, VR src2) { // Vector bitwise xor
-        write32 (0x100004C4 | (dest << 21) | (src1 << 16) | (src2 << 11));
+    void stvebx (VR dest, GPR base, GPR offset) { // Store Vector Element Byte Indexed
+        write32 (0x7C00010E | (dest << 21) | (base << 16) | (offset << 11));
     }
 
-    void vperm (VR dest, VR src1, VR src2, VR src3) { // Vector permute
-        write32 (0x1000002B | (dest << 21) | (src1 << 16) | (src2 << 11) | (src3 << 6));
+    void stvehx (VR dest, GPR base, GPR offset) { // Store Vector Element Half Word Indexed
+        write32 (0x7C00014E | (dest << 21) | (base << 16) | (offset << 11));
+    }
+
+    void stvewx (VR dest, GPR base, GPR offset) { // Store Vector Element Word Indexed
+        write32 (0x7C00018E | (dest << 21) | (base << 16) | (offset << 11));
+    }
+
+    void stvx (VR dest, GPR base, GPR offset) { // Store Vector Indexed
+        write32 (0x7C0001CE | (dest << 21) | (base << 16) | (offset << 11));
+    }
+
+    void stvxl (VR dest, GPR base, GPR offset) { // Store Vector Indexed LRU
+        write32 (0x7C0003CE | (dest << 21) | (base << 16) | (offset << 11));
     }
 };
 } // End Namespace Luma

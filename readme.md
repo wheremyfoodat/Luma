@@ -8,6 +8,7 @@ A PowerPC emitter/dynamic assembler single header library, written in C++
 - Support for most basic instructions
 - Support for most FPU instructions 
 - Support for the IBM Gekko/Broadway/Espresso's "Paired Single" SIMD ISA extension
+- Support for the AltiVec SIMD ISA extension
 - Support for instructions of... questionable usefulness, including data/instruction cache control instructions, superscalar execution control instructions, etc
 - Easily customizable, letting you add custom instructions/pseudo-ops/types and more
 - Support for many different helpful pseudo-ops and macros (`liw`, `clrrwi`, `rotlwi`, `rotrwi`, and more)
@@ -18,7 +19,6 @@ A PowerPC emitter/dynamic assembler single header library, written in C++
 - Works on both little and big endian (code is emitted at native endianness)
 
 # TODO
-- AltiVec SIMD ISA support
 - Rest of the major missing instructions (mostly load/store addressing modes, and paired quantized loads for PS)
 - Fix AutoGrow bugs
 - Improve automatic memory management
