@@ -116,4 +116,11 @@ label:
     beq label
 ```
 
+# Supported directives
+- align x (Align buffer to an x byte boundary)
+- repeat (Expands a segment of code multiple time with a compile-time for loop. Can even be abused if you want a compile-time for loop without wanting to do anything emitter-related)
+- db, dh, dw, dd (Place a byte/halfword/word/doubleword in the code buffer)
+- df32, df64 (Place a float/double in the code buffer)
+- ds (Place a C-string/std::string in the code buffer)
+
 Documentation soon™
